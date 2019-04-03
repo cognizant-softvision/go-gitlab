@@ -557,18 +557,28 @@ func (s *ProjectsService) EditProject(pid interface{}, opt *EditProjectOptions, 
 	return p, resp, err
 }
 
-// ForkProject forks a project into the user namespace of the authenticated
-// user.
+// ForkProjectOptions represents the available ForkProject() options.
 //
 // GitLab API docs: https://docs.gitlab.com/ce/api/projects.html#fork-project
-func (s *ProjectsService) ForkProject(pid interface{}, options ...OptionFunc) (*Project, *Response, error) {
+type ForkProjectOptions struct {
+	ID        *int    `json:"id"`
+	Namespace *int    `json:"namespace"`
+	Path      *string `json:"path"`
+	Name      *string `json:"name"`
+}
+
+// ForkProject forks a project into the user namespace of the authenticated
+// user if other namespace is not provided by ForkProjectOptions
+//
+// GitLab API docs: https://docs.gitlab.com/ce/api/projects.html#fork-project
+func (s *ProjectsService) ForkProject(pid interface{}, opt *ForkProjectOptions, options ...OptionFunc) (*Project, *Response, error) {
 	project, err := parseID(pid)
 	if err != nil {
 		return nil, nil, err
 	}
 	u := fmt.Sprintf("projects/%s/fork", url.QueryEscape(project))
 
-	req, err := s.client.NewRequest("POST", u, nil, options)
+	req, err := s.client.NewRequest("POST", u, opt, options)
 	if err != nil {
 		return nil, nil, err
 	}
